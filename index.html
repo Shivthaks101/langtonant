@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Langton's Ant Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Langton's Ant Simulation</h1>
+            <p>A cellular automaton that creates fascinating patterns</p>
+            <div class="audio-controls">
+                <audio id="bgMusic" loop>
+                    <source src="relaxed-scene.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <button id="musicToggle" class="music-btn">🎵 Play Music</button>
+            </div>
+        </header>
+        
+        <main>
+            <section class="content-box">
+                <h2>Controls</h2>
+                <div class="controls">
+                    <button id="startBtn">Start</button>
+                    <button id="stopBtn">Stop</button>
+                    <button id="resetBtn">Reset</button>
+                    <div class="speed-control">
+                        <label for="speed">Speed:</label>
+                        <input type="range" id="speed" min="1" max="100" value="50">
+                    </div>
+                </div>
+                <div class="ant-controls">
+                    <button id="addAntBtn">Add Ant</button>
+                    <span id="antCount">Current Ants: 4</span>
+                </div>
+            </section>
+            <section class="content-box">
+                <canvas id="antCanvas"></canvas>
+            </section>
+
+            <section class="content-box">
+                <h2>About Langton's Ant</h2>
+                <p>Langton's Ant is a two-dimensional cellular automaton with simple rules:</p>
+                <ul>
+                    <li>At a white square, turn 90° right, flip the color, move forward</li>
+                    <li>At a black square, turn 90° left, flip the color, move forward</li>
+                </ul>
+                <p>Despite these simple rules, the ant creates complex patterns!</p>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Langton's Ant Simulation. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
