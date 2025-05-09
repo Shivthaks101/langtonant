@@ -12,8 +12,8 @@
             <h1>Langton's Ant Simulation</h1>
             <p>A cellular automaton that creates fascinating patterns</p>
             <div class="audio-controls">
-                <audio id="bgMusic" loop>
-                    <source src="relaxed-scene.mp3" type="audio/mpeg">
+                <audio id="bgMusic" preload="auto">
+                    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
                     Your browser does not support the audio element.
                 </audio>
                 <button id="musicToggle" class="music-btn">🎵 Play Music</button>
@@ -37,6 +37,7 @@
                     <span id="antCount">Current Ants: 4</span>
                 </div>
             </section>
+            
             <section class="content-box">
                 <canvas id="antCanvas"></canvas>
             </section>
@@ -56,6 +57,31 @@
             <p>&copy; 2024 Langton's Ant Simulation. All rights reserved.</p>
         </footer>
     </div>
+
+    <!-- Modal for ant placement -->
+    <div id="placementModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Ant</h3>
+            <div class="placement-options">
+                <button id="randomPlacement" class="placement-btn">Random Placement</button>
+                <button id="manualPlacement" class="placement-btn">Manual Placement</button>
+            </div>
+            <div id="manualPlacementControls" class="manual-controls" style="display: none;">
+                <p>Click on the canvas to place the ant</p>
+                <div class="direction-controls">
+                    <label>Initial Direction:</label>
+                    <select id="antDirection">
+                        <option value="0">Up</option>
+                        <option value="1">Right</option>
+                        <option value="2">Down</option>
+                        <option value="3">Left</option>
+                    </select>
+                </div>
+                <button id="cancelPlacement" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html> 
