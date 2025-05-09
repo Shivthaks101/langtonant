@@ -37,10 +37,56 @@ class LangtonsAnt {
         this.musicToggle = document.getElementById('musicToggle');
         this.isMusicPlaying = false;
         this.antCountDisplay = document.getElementById('antCount');
+        this.modal = document.getElementById('placementModal');
+        this.manualControls = document.getElementById('manualPlacementControls');
+        this.isManualPlacement = false;
 
         this.initializeGrid();
         this.setupEventListeners();
         this.updateAntCount();
+        this.setupAudioHandling();
+    }
+
+    setupAudioHandling() {
+        const audio = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('musicToggle');
+        
+        // Set audio properties
+        audio.loop = true;
+        audio.volume = 0.5;
+        
+        // Handle audio loading
+        audio.addEventListener('canplaythrough', () => {
+            musicBtn.style.display = 'block';
+            musicBtn.textContent = '🎵 Play Music';
+        });
+
+        audio.addEventListener('error', (e) => {
+            console.error('Audio error:', e);
+            musicBtn.style.display = 'none';
+            alert('Audio playback is not available. This might be due to browser settings or extensions.');
+        });
+
+        // Handle play/pause
+        musicBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise
+                        .then(() => {
+                            musicBtn.textContent = '🎵 Pause Music';
+                        })
+                        .catch(error => {
+                            console.error('Playback failed:', error);
+                            musicBtn.style.display = 'none';
+                            alert('Audio playback was blocked. Please check your browser settings or disable ad blockers.');
+                        });
+                }
+            } else {
+                audio.pause();
+                musicBtn.textContent = '🎵 Play Music';
+            }
+        });
     }
 
     generateRandomColor() {
@@ -48,19 +94,64 @@ class LangtonsAnt {
         return `hsl(${hue}, 70%, 50%)`;
     }
 
-    addAnt() {
-        const cols = Math.floor(this.canvas.width / this.cellSize);
-        const rows = Math.floor(this.canvas.height / this.cellSize);
-        
+    showPlacementModal() {
+        this.modal.classList.add('active');
+        this.manualControls.style.display = 'none';
+    }
+
+    hidePlacementModal() {
+        this.modal.classList.remove('active');
+        this.canvas.classList.remove('placement-mode');
+        this.isManualPlacement = false;
+        this.manualControls.style.display = 'none';
+    }
+
+    addAnt(x, y, direction) {
         const newAnt = {
-            x: Math.floor(Math.random() * cols),
-            y: Math.floor(Math.random() * rows),
-            direction: Math.floor(Math.random() * 4),
+            x: x,
+            y: y,
+            direction: direction,
             color: this.generateRandomColor()
         };
         
         this.ants.push(newAnt);
         this.updateAntCount();
+    }
+
+    addRandomAnt() {
+        const cols = Math.floor(this.canvas.width / this.cellSize);
+        const rows = Math.floor(this.canvas.height / this.cellSize);
+        
+        this.addAnt(
+            Math.floor(Math.random() * cols),
+            Math.floor(Math.random() * rows),
+            Math.floor(Math.random() * 4)
+        );
+    }
+
+    startManualPlacement() {
+        this.manualControls.style.display = 'block';
+        this.canvas.classList.add('placement-mode');
+        this.isManualPlacement = true;
+        this.modal.classList.remove('active');
+    }
+
+    handleCanvasClick(event) {
+        if (!this.isManualPlacement) return;
+
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        
+        const x = Math.floor(((event.clientX - rect.left) * scaleX) / this.cellSize);
+        const y = Math.floor(((event.clientY - rect.top) * scaleY) / this.cellSize);
+        const direction = parseInt(document.getElementById('antDirection').value);
+
+        if (x >= 0 && x < Math.floor(this.canvas.width / this.cellSize) &&
+            y >= 0 && y < Math.floor(this.canvas.height / this.cellSize)) {
+            this.addAnt(x, y, direction);
+            this.hidePlacementModal();
+        }
     }
 
     updateAntCount() {
@@ -80,6 +171,9 @@ class LangtonsAnt {
         const resetBtn = document.getElementById('resetBtn');
         const speedSlider = document.getElementById('speed');
         const addAntBtn = document.getElementById('addAntBtn');
+        const randomPlacementBtn = document.getElementById('randomPlacement');
+        const manualPlacementBtn = document.getElementById('manualPlacement');
+        const cancelPlacementBtn = document.getElementById('cancelPlacement');
 
         startBtn.addEventListener('click', () => this.start());
         stopBtn.addEventListener('click', () => this.stop());
@@ -87,7 +181,16 @@ class LangtonsAnt {
         speedSlider.addEventListener('input', (e) => {
             this.speed = e.target.value;
         });
-        addAntBtn.addEventListener('click', () => this.addAnt());
+        addAntBtn.addEventListener('click', () => this.showPlacementModal());
+        randomPlacementBtn.addEventListener('click', () => {
+            this.addRandomAnt();
+            this.hidePlacementModal();
+        });
+        manualPlacementBtn.addEventListener('click', () => this.startManualPlacement());
+        cancelPlacementBtn.addEventListener('click', () => this.hidePlacementModal());
+        
+        this.canvas.removeEventListener('click', this.handleCanvasClick);
+        this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
 
         // Music controls
         this.musicToggle.addEventListener('click', () => this.toggleMusic());
@@ -106,16 +209,22 @@ class LangtonsAnt {
     }
 
     toggleMusic() {
-        if (this.isMusicPlaying) {
-            this.bgMusic.pause();
-            this.musicToggle.textContent = '🎵 Play Music';
-            this.musicToggle.classList.remove('playing');
-        } else {
-            this.bgMusic.play();
-            this.musicToggle.textContent = '🎵 Pause Music';
-            this.musicToggle.classList.add('playing');
+        try {
+            if (this.isMusicPlaying) {
+                this.bgMusic.pause();
+            } else {
+                const playPromise = this.bgMusic.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log('Playback failed:', error);
+                        this.musicToggle.style.display = 'none';
+                    });
+                }
+            }
+        } catch (error) {
+            console.log('Music toggle error:', error);
+            this.musicToggle.style.display = 'none';
         }
-        this.isMusicPlaying = !this.isMusicPlaying;
     }
 
     start() {
